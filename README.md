@@ -4,8 +4,8 @@
 This repository contains the codebase for a student team project combining a semantic segmentation module with a vision-based heading controller. The structure is designed to support independent development of components, which can then be tested together in a central pipeline.
 
 ## Repository Structure
-- `src/segmentation/`: Core logic for semantic segmentation (models, training, inference).
-- `src/heading_controller/`: Core logic for the heading controller (models, training, inference).
+- `src/segmentation/`: Core logic for semantic segmentation (training, inference). You can add multiple model architectures inside the `src/segmentation/models/` directory for experimentation.
+- `src/heading_controller/`: Core logic for the heading controller (training, inference). You can add multiple model architectures inside the `src/heading_controller/models/` directory for experimentation.
 - `src/pipeline/`: Integration layer connecting both modules.
 - `notebooks/`: Contains `main.ipynb` for central experimentation and testing.
 - `data/`: Datasets (raw and processed) should be placed here.
