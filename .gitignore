@@ -30,8 +30,8 @@ env/
 .ipynb_checkpoints
 
 # Project specifics
-data/raw/*
-data/processed/*
+# data/raw/*
+# data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/processed/train/.gitkeep
