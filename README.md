@@ -20,5 +20,5 @@ This repository contains the codebase for a student team project combining a sem
 
 ## Getting Started
 1. Install dependencies: `pip install -r requirements.txt`
-2. Place your datasets inside the `data/` folder.
+2. Download and prepare the dataset by running: `python src/pipeline/prepare_dataset.py`
 3. Use `notebooks/main.ipynb` or the training scripts in `src/` to begin experiments.
