@@ -45,3 +45,6 @@ results/*
 !results/.gitkeep
 !results/figures/.gitkeep
 !results/metrics/.gitkeep
+
+# macOS
+.DS_Store
