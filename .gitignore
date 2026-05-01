@@ -30,6 +30,7 @@ env/
 .ipynb_checkpoints
 
 # Project specifics
+input_vid.mp4
 data/*.zip
 data/raw/*
 data/processed/*
@@ -39,12 +40,18 @@ data/processed/*
 !data/processed/test/.gitkeep
 checkpoints/*
 !checkpoints/.gitkeep
+!checkpoints/segmentation/
 !checkpoints/segmentation/.gitkeep
+!checkpoints/segmentation/pidNet_wieghts.pt
 !checkpoints/heading_controller/.gitkeep
 results/*
 !results/.gitkeep
 !results/figures/.gitkeep
 !results/metrics/.gitkeep
+
+# third_party/ is intentionally tracked so the repo is self-contained.
+# Clone PIDNet before running the pipeline:
+#   git clone https://github.com/XuJiacong/PIDNet.git third_party/PIDNet
 
 # macOS
 .DS_Store
