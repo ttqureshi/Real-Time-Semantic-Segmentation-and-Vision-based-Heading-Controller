@@ -54,9 +54,11 @@ def main():
     cudnn.benchmark = config.CUDNN.BENCHMARK
     cudnn.deterministic = config.CUDNN.DETERMINISTIC
     cudnn.enabled = config.CUDNN.ENABLED
+    device = torch.device('cuda' if torch.cuda.is_available() and len(config.GPUS) > 0 else 'cpu')
 
     # build model
-    model = model = models.pidnet.get_seg_model(config, imgnet_pretrained=True)
+    imgnet = 'imagenet' in config.MODEL.PRETRAINED.lower()
+    model = models.pidnet.get_seg_model(config, imgnet_pretrained=imgnet)
 
     if config.TEST.MODEL_FILE:
         model_state_file = config.TEST.MODEL_FILE
@@ -77,7 +79,7 @@ def main():
     model_dict.update(pretrained_dict)
     model.load_state_dict(model_dict)
 
-    model = model.cuda()
+    model = model.to(device)
 
     # prepare data
     test_size = (config.TEST.IMAGE_SIZE[1], config.TEST.IMAGE_SIZE[0])
@@ -96,7 +98,7 @@ def main():
         batch_size=1,
         shuffle=False,
         num_workers=0,
-        pin_memory=True)
+        pin_memory=(device.type == 'cuda'))
     
     start = timeit.default_timer()
     
@@ -122,7 +124,7 @@ def main():
 
 
     end = timeit.default_timer()
-    logger.info('Mins: %d' % np.int((end-start)/60))
+    logger.info('Mins: %d' % int((end-start)/60))
     logger.info('Done')
 
 

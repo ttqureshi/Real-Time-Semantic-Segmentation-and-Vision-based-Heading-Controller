@@ -3,6 +3,7 @@
 # ------------------------------------------------------------------------------
 
 import argparse
+import math
 import os
 import pprint
 
@@ -71,15 +72,18 @@ def main():
     cudnn.benchmark = config.CUDNN.BENCHMARK
     cudnn.deterministic = config.CUDNN.DETERMINISTIC
     cudnn.enabled = config.CUDNN.ENABLED
-    gpus = list(config.GPUS)
-    if torch.cuda.device_count() != len(gpus):
+    use_cuda = torch.cuda.is_available() and len(config.GPUS) > 0
+    gpus = list(config.GPUS) if use_cuda else []
+    device = torch.device('cuda' if use_cuda else 'cpu')
+    if use_cuda and torch.cuda.device_count() < len(gpus):
         print("The gpu numbers do not match!")
         return 0
     
-    imgnet = 'imagenet' in config.MODEL.PRETRAINED
+    imgnet = 'imagenet' in config.MODEL.PRETRAINED.lower()
     model = models.pidnet.get_seg_model(config, imgnet_pretrained=imgnet)
  
-    batch_size = config.TRAIN.BATCH_SIZE_PER_GPU * len(gpus)
+    world_size = len(gpus) if use_cuda else 1
+    batch_size = config.TRAIN.BATCH_SIZE_PER_GPU * world_size
     # prepare data
     crop_size = (config.TRAIN.IMAGE_SIZE[1], config.TRAIN.IMAGE_SIZE[0])
     train_dataset = eval('datasets.'+config.DATASET.DATASET)(
@@ -98,8 +102,8 @@ def main():
         batch_size=batch_size,
         shuffle=config.TRAIN.SHUFFLE,
         num_workers=config.WORKERS,
-        pin_memory=False,
-        drop_last=True)
+        pin_memory=use_cuda,
+        drop_last=(len(train_dataset) >= batch_size))
 
 
     test_size = (config.TEST.IMAGE_SIZE[1], config.TEST.IMAGE_SIZE[0])
@@ -115,10 +119,10 @@ def main():
 
     testloader = torch.utils.data.DataLoader(
         test_dataset,
-        batch_size=config.TEST.BATCH_SIZE_PER_GPU * len(gpus),
+        batch_size=config.TEST.BATCH_SIZE_PER_GPU * world_size,
         shuffle=False,
         num_workers=config.WORKERS,
-        pin_memory=False)
+        pin_memory=use_cuda)
 
     # criterion
     if config.LOSS.USE_OHEM:
@@ -133,7 +137,10 @@ def main():
     bd_criterion = BondaryLoss()
     
     model = FullModel(model, sem_criterion, bd_criterion)
-    model = nn.DataParallel(model, device_ids=gpus).cuda()
+    if use_cuda and len(gpus) > 1:
+        model = nn.DataParallel(model, device_ids=gpus).to(device)
+    else:
+        model = model.to(device)
 
     # optimizer
     if config.TRAIN.OPTIMIZER == 'sgd':
@@ -149,7 +156,7 @@ def main():
     else:
         raise ValueError('Only Support SGD optimizer')
 
-    epoch_iters = int(train_dataset.__len__() / config.TRAIN.BATCH_SIZE_PER_GPU / len(gpus))
+    epoch_iters = max(1, math.ceil(train_dataset.__len__() / batch_size))
         
     best_mIoU = 0
     last_epoch = 0
@@ -161,8 +168,8 @@ def main():
             best_mIoU = checkpoint['best_mIoU']
             last_epoch = checkpoint['epoch']
             dct = checkpoint['state_dict']
-            
-            model.module.model.load_state_dict({k.replace('model.', ''): v for k, v in dct.items() if k.startswith('model.')})
+            stateful_model = model.module if isinstance(model, nn.DataParallel) else model
+            stateful_model.model.load_state_dict({k.replace('model.', ''): v for k, v in dct.items() if k.startswith('model.')})
             optimizer.load_state_dict(checkpoint['optimizer'])
             logger.info("=> loaded checkpoint (epoch {})".format(checkpoint['epoch']))
 
@@ -189,29 +196,28 @@ def main():
 
         logger.info('=> saving checkpoint to {}'.format(
             final_output_dir + 'checkpoint.pth.tar'))
+        stateful_model = model.module if isinstance(model, nn.DataParallel) else model
         torch.save({
             'epoch': epoch+1,
             'best_mIoU': best_mIoU,
-            'state_dict': model.module.state_dict(),
+            'state_dict': stateful_model.state_dict(),
             'optimizer': optimizer.state_dict(),
         }, os.path.join(final_output_dir,'checkpoint.pth.tar'))
         if mean_IoU > best_mIoU:
             best_mIoU = mean_IoU
-            torch.save(model.module.state_dict(),
+            torch.save(stateful_model.state_dict(),
                     os.path.join(final_output_dir, 'best.pt'))
         msg = 'Loss: {:.3f}, MeanIU: {: 4.4f}, Best_mIoU: {: 4.4f}'.format(
                     valid_loss, mean_IoU, best_mIoU)
         logging.info(msg)
         logging.info(IoU_array)
-
-
-
-    torch.save(model.module.state_dict(),
+    stateful_model = model.module if isinstance(model, nn.DataParallel) else model
+    torch.save(stateful_model.state_dict(),
             os.path.join(final_output_dir, 'final_state.pt'))
 
     writer_dict['writer'].close()
     end = timeit.default_timer()
-    logger.info('Hours: %d' % np.int((end-start)/3600))
+    logger.info('Hours: %d' % int((end-start)/3600))
     logger.info('Done')
 
 if __name__ == '__main__':

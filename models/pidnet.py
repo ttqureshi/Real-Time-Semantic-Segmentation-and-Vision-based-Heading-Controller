@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------------------
 # Written by Jiacong Xu (jiacong.xu@tamu.edu)
 # ------------------------------------------------------------------------------
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -182,6 +183,7 @@ class PIDNet(nn.Module):
             return x_      
 
 def get_seg_model(cfg, imgnet_pretrained):
+    pretrained_path = cfg.MODEL.PRETRAINED
     
     if 's' in cfg.MODEL.NAME:
         model = PIDNet(m=2, n=3, num_classes=cfg.DATASET.NUM_CLASSES, planes=32, ppm_planes=96, head_planes=128, augment=True)
@@ -190,8 +192,15 @@ def get_seg_model(cfg, imgnet_pretrained):
     else:
         model = PIDNet(m=3, n=4, num_classes=cfg.DATASET.NUM_CLASSES, planes=64, ppm_planes=112, head_planes=256, augment=True)
     
+    if not pretrained_path:
+        logging.info('No pretrained model configured, using random initialization.')
+        return model
+    if not os.path.isfile(pretrained_path):
+        logging.warning('Pretrained model not found at %s. Using random initialization.', pretrained_path)
+        return model
+
     if imgnet_pretrained:
-        pretrained_state = torch.load(cfg.MODEL.PRETRAINED, map_location='cpu')['state_dict'] 
+        pretrained_state = torch.load(pretrained_path, map_location='cpu')['state_dict'] 
         model_dict = model.state_dict()
         pretrained_state = {k: v for k, v in pretrained_state.items() if (k in model_dict and v.shape == model_dict[k].shape)}
         model_dict.update(pretrained_state)
@@ -201,7 +210,7 @@ def get_seg_model(cfg, imgnet_pretrained):
         logging.info('Over!!!')
         model.load_state_dict(model_dict, strict = False)
     else:
-        pretrained_dict = torch.load(cfg.MODEL.PRETRAINED, map_location='cpu')
+        pretrained_dict = torch.load(pretrained_path, map_location='cpu')
         if 'state_dict' in pretrained_dict:
             pretrained_dict = pretrained_dict['state_dict']
         model_dict = model.state_dict()
@@ -273,5 +282,4 @@ if __name__ == '__main__':
     
     
     
-
 

@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+
+log/
+output/
+runs/
+analysis/
+.cache/
+.mplconfig/
+
+*.pt
+*.pth
+*.pth.tar
+*.ckpt

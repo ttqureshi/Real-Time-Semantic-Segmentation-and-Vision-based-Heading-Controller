@@ -8,3 +8,4 @@ from __future__ import print_function
 
 from .cityscapes import Cityscapes as cityscapes
 from .camvid import CamVid as camvid
+from .robotics_semantic import RoboticsSemantic as robotics_semantic

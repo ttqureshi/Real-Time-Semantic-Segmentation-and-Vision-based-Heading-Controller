@@ -22,6 +22,7 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr,
           num_iters, trainloader, optimizer, model, writer_dict):
     # Training
     model.train()
+    device = next(model.parameters()).device
 
     batch_time = AverageMeter()
     ave_loss = AverageMeter()
@@ -35,9 +36,9 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr,
 
     for i_iter, batch in enumerate(trainloader, 0):
         images, labels, bd_gts, _, _ = batch
-        images = images.cuda()
-        labels = labels.long().cuda()
-        bd_gts = bd_gts.float().cuda()
+        images = images.to(device)
+        labels = labels.long().to(device)
+        bd_gts = bd_gts.float().to(device)
         
 
         losses, _, acc, loss_list = model(images, labels, bd_gts)
@@ -76,6 +77,7 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr,
 
 def validate(config, testloader, model, writer_dict):
     model.eval()
+    device = next(model.parameters()).device
     ave_loss = AverageMeter()
     nums = config.MODEL.NUM_OUTPUTS
     confusion_matrix = np.zeros(
@@ -84,9 +86,9 @@ def validate(config, testloader, model, writer_dict):
         for idx, batch in enumerate(testloader):
             image, label, bd_gts, _, _ = batch
             size = label.size()
-            image = image.cuda()
-            label = label.long().cuda()
-            bd_gts = bd_gts.float().cuda()
+            image = image.to(device)
+            label = label.long().to(device)
+            bd_gts = bd_gts.float().to(device)
 
             losses, pred, _, _ = model(image, label, bd_gts)
             if not isinstance(pred, (list, tuple)):
@@ -131,12 +133,13 @@ def validate(config, testloader, model, writer_dict):
 def testval(config, test_dataset, testloader, model,
             sv_dir='./', sv_pred=False):
     model.eval()
+    device = next(model.parameters()).device
     confusion_matrix = np.zeros((config.DATASET.NUM_CLASSES, config.DATASET.NUM_CLASSES))
     with torch.no_grad():
         for index, batch in enumerate(tqdm(testloader)):
             image, label, _, _, name = batch
             size = label.size()
-            pred = test_dataset.single_scale_inference(config, model, image.cuda())
+            pred = test_dataset.single_scale_inference(config, model, image.to(device))
 
             if pred.size()[-2] != size[-2] or pred.size()[-1] != size[-1]:
                 pred = F.interpolate(
@@ -180,6 +183,7 @@ def testval(config, test_dataset, testloader, model,
 def test(config, test_dataset, testloader, model,
          sv_dir='./', sv_pred=True):
     model.eval()
+    device = next(model.parameters()).device
     with torch.no_grad():
         for _, batch in enumerate(tqdm(testloader)):
             image, size, name = batch
@@ -187,7 +191,7 @@ def test(config, test_dataset, testloader, model,
             pred = test_dataset.single_scale_inference(
                 config,
                 model,
-                image.cuda())
+                image.to(device))
 
             if pred.size()[-2] != size[0] or pred.size()[-1] != size[1]:
                 pred = F.interpolate(
