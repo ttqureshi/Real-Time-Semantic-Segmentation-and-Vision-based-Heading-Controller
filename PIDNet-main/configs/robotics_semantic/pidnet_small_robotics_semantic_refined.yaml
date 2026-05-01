@@ -1,0 +1,55 @@
+CUDNN:
+  BENCHMARK: false
+  DETERMINISTIC: true
+  ENABLED: true
+GPUS: ()
+OUTPUT_DIR: 'output'
+LOG_DIR: 'log'
+WORKERS: 0
+PRINT_FREQ: 10
+
+DATASET:
+  DATASET: robotics_semantic
+  ROOT: 'data/'
+  TEST_SET: 'list/robotics_semantic/val.lst'
+  TRAIN_SET: 'list/robotics_semantic/train.lst'
+  NUM_CLASSES: 6
+MODEL:
+  NAME: pidnet_small
+  NUM_OUTPUTS: 2
+  PRETRAINED: 'output/robotics_semantic/pidnet_small_robotics_semantic/best.pt'
+LOSS:
+  USE_OHEM: true
+  OHEMTHRES: 0.9
+  OHEMKEEP: 32768
+  BALANCE_WEIGHTS: [0.4, 1.0]
+  SB_WEIGHTS: 1.0
+TRAIN:
+  IMAGE_SIZE:
+  - 432
+  - 432
+  BASE_SIZE: 432
+  BATCH_SIZE_PER_GPU: 2
+  SHUFFLE: true
+  BEGIN_EPOCH: 0
+  END_EPOCH: 30
+  RESUME: false
+  OPTIMIZER: sgd
+  LR: 0.001
+  WD: 0.0005
+  MOMENTUM: 0.9
+  NESTEROV: false
+  FLIP: true
+  MULTI_SCALE: true
+  IGNORE_LABEL: 255
+  SCALE_FACTOR: 8
+TEST:
+  IMAGE_SIZE:
+  - 432
+  - 432
+  BASE_SIZE: 432
+  BATCH_SIZE_PER_GPU: 1
+  FLIP_TEST: false
+  MULTI_SCALE: false
+  MODEL_FILE: ''
+  OUTPUT_INDEX: 1

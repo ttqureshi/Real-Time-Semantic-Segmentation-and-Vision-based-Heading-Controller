@@ -1,0 +1,61 @@
+2026-04-19 13:09:48,012 Namespace(cfg='configs/robotics_semantic/pidnet_small_robotics_semantic.yaml', seed=304, opts=['TRAIN.END_EPOCH', '1', 'PRINT_FREQ', '10'])
+2026-04-19 13:09:48,012 AUTO_RESUME: False
+CUDNN:
+  BENCHMARK: False
+  DETERMINISTIC: True
+  ENABLED: True
+DATASET:
+  DATASET: robotics_semantic
+  EXTRA_TRAIN_SET: 
+  NUM_CLASSES: 6
+  ROOT: data/
+  TEST_SET: list/robotics_semantic/val.lst
+  TRAIN_SET: list/robotics_semantic/train.lst
+GPUS: ()
+LOG_DIR: log
+LOSS:
+  BALANCE_WEIGHTS: [0.4, 1.0]
+  CLASS_BALANCE: False
+  OHEMKEEP: 65536
+  OHEMTHRES: 0.9
+  SB_WEIGHTS: 1.0
+  USE_OHEM: True
+MODEL:
+  ALIGN_CORNERS: True
+  NAME: pidnet_small
+  NUM_OUTPUTS: 2
+  PRETRAINED: pretrained_models/cityscapes/PIDNet_S_Cityscapes_test.pt
+OUTPUT_DIR: output
+PIN_MEMORY: True
+PRINT_FREQ: 10
+TEST:
+  BASE_SIZE: 432
+  BATCH_SIZE_PER_GPU: 1
+  FLIP_TEST: False
+  IMAGE_SIZE: [432, 432]
+  MODEL_FILE: 
+  MULTI_SCALE: False
+  OUTPUT_INDEX: 1
+TRAIN:
+  BASE_SIZE: 432
+  BATCH_SIZE_PER_GPU: 1
+  BEGIN_EPOCH: 0
+  END_EPOCH: 1
+  EXTRA_EPOCH: 0
+  EXTRA_LR: 0.001
+  FLIP: True
+  IGNORE_LABEL: 255
+  IMAGE_SIZE: [432, 432]
+  LR: 0.002
+  MOMENTUM: 0.9
+  MULTI_SCALE: False
+  NESTEROV: False
+  OPTIMIZER: sgd
+  RESUME: False
+  SCALE_FACTOR: 8
+  SHUFFLE: True
+  WD: 0.0005
+WORKERS: 0
+2026-04-19 13:09:48,228 Attention!!!
+2026-04-19 13:09:48,229 Loaded 475 parameters!
+2026-04-19 13:09:48,229 Over!!!
