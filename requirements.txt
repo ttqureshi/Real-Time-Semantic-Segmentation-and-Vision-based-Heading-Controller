@@ -4,3 +4,12 @@ pandas
 matplotlib
 jupyter
 gdown
+
+# Heading controller / optical flow pipeline
+opencv-python       # dense optical flow (Farneback) + video I/O
+tqdm                # progress bars (optional, used in batch scripts)
+
+# PIDNet segmentation
+torch
+torchvision
+yacs                # config system used by PIDNet
