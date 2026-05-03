@@ -12,5 +12,5 @@ MODEL:
   PRETRAINED: 'checkpoints/segmentation/pidNet_wieghts.pt'
 
 TEST:
-  IMAGE_SIZE: [1280, 720]
+  IMAGE_SIZE: [432, 432]
   OUTPUT_INDEX: -1
