@@ -31,6 +31,7 @@ env/
 
 # Project specifics
 input_vid.mp4
+input_vid1.mp4
 data/*.zip
 data/raw/*
 data/processed/*
@@ -48,6 +49,7 @@ results/*
 !results/.gitkeep
 !results/figures/.gitkeep
 !results/metrics/.gitkeep
+raw/
 
 # third_party/ is intentionally tracked so the repo is self-contained.
 # Clone PIDNet before running the pipeline:
